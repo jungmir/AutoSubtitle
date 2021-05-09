@@ -3,3 +3,4 @@ scikit-image==0.18.1
 scikit-video==1.1.11
 youtube-dl==2021.4.26
 python-dotenv==0.17.1
+moviepy==1.0.3
