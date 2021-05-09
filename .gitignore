@@ -2,6 +2,9 @@ venv
 .venv
 .vscode
 
+# pycache
+**/__pycache__/*
+
 .env
 
 data/videos/*
