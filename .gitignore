@@ -1,3 +1,8 @@
 venv
 .venv
 .vscode
+
+.env
+
+data/videos/*
+!data/videos/test*
