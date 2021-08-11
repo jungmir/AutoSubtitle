@@ -9,3 +9,4 @@ venv
 
 data/videos/*
 !data/videos/test*
+node_modules
