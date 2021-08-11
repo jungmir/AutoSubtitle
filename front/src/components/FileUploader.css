@@ -1,0 +1,54 @@
+.file-upload-section {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-upload-section article {
+    width: 100%;
+    height: 100%;
+    display: inherit;
+}
+
+.outbound {
+    display: block;
+    border: 4px dashed gray;
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    margin: 1rem;
+    background-color: white;
+}
+
+.outbound .wrapper {
+    display: inherit;
+    width: 100%;
+    height: 100%;
+}
+
+.outbound .wrapper h1 {
+    display: inherit;
+    position: absolute;
+    width: 100%;
+    top: 20%;
+    font-size: xx-large;
+}
+
+#file-uploader {
+    width: 100%;
+    height: 100%;
+    color: transparent;
+    cursor: pointer;
+    z-index: 1;
+}
+
+#file-uploader::-webkit-file-upload-button {
+    cursor: pointer;
+    display: none;
+}
+
+.drop-over {
+    border: 4px dashed white;
+    background-color: gray;
+}
