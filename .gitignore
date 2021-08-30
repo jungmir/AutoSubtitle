@@ -9,3 +9,5 @@ venv
 
 data/videos/*
 !data/videos/test*
+
+.DS_STORE
