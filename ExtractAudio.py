@@ -4,7 +4,8 @@ import math
 import os
 
 WINDOW_SIZE = 0.5
-THRESHOLD = 0.335
+THRESHOLD = 0.3
+SUBTITLE_TYPE = '.srt'
 
 
 class Extract:
@@ -16,7 +17,6 @@ class Extract:
             temp_video_path='data/videos/',
             window_size=WINDOW_SIZE,
             threshold=THRESHOLD,
-            subtitle_type='srt',
             language="en-GB"
     ):
         self.WINDOW_SIZE = window_size
@@ -28,14 +28,21 @@ class Extract:
         self.video_name = video_id
         self.video_type = video_type
         self.audio_type = audio_type
+        self.subtitle_type = SUBTITLE_TYPE
         self.language = language
         self.temp_video_path = rf'{temp_video_path}/{video_id}/{video_id}.{video_type}'
         self.audio_path = self.temp_video_path.replace(video_type, audio_type)
         self.subtitle_path = self.temp_video_path.replace(
-            video_type, subtitle_type)
+            video_type, SUBTITLE_TYPE)
 
     def __call__(self):
         pass
+
+    def extract(self):
+        myClip, file_length = self.cvtVideo2Audio()
+        self.extract_sound(myClip, file_length)
+        self.make_subtitle()
+        return self.subtitle_path
 
     def cvtVideo2Audio(self):
         video = mp.VideoFileClip(self.temp_video_path)
@@ -63,18 +70,19 @@ class Extract:
                 isStartSpeak = True
 
     def make_subtitle(self):
-        # log = open('log/log.text', 'w')
+        subtitle_index = 1
         with self.sr.AudioFile(self.audio_path) as source:
             for (idx, _) in enumerate(self.subtitle):
                 start, end = _
-                self.recognizer.energy_threshold = 4000
+                # self.recognizer.energy_threshold = 4000
                 # self.recognizer.pause_threshold = 0.8
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
                 audio = self.recognizer.record(
                     source, offset=0, duration=(end-start))
-                # print(audio.get_segment(start, end)
-                with open(f'{idx}.wav', 'wb') as test:
-                    test.write(audio.get_wav_data())
+                
+                # 테스트 코드 (오디오 영역이 잘 분리 되는지 확인을 위한)
+                # with open(f'{idx}.wav', 'wb') as test:
+                #     test.write(audio.get_wav_data())
                 if audio:
                     try:
                         string = self.recognizer.recognize_google(
@@ -84,20 +92,33 @@ class Extract:
                         print(e)
                     if type(string) is not list:
                         saveString = string['alternative'][0]['transcript']
-                        saveformat = f'{idx}\n{start} --> {end}\n{saveString}\n\n'
+                        start_time = self.get_timestamp(start)
+                        end_time = self.get_timestamp(end)
+                        saveformat = f'{subtitle_index}\n{start_time} --> {end_time}\n{saveString}\n\n'
                         self.subtitleSub.append(saveformat)
+                        subtitle_index += 1
                         print(f"{start} - {end} {saveString}")
                 else:
                     print('no audio')
 
         with open(self.subtitle_path, 'w') as f:
             f.writelines(self.subtitleSub)
-        # log.close()
+
+    def get_timestamp(self, time):
+        result = int(time * 1000) # cvt sec to ms
+        hour = minute = second = millisecond = 0
+        millisecond = result % 1000
+        result //= 1000
+        second = result % 60
+        result //= 60
+        minute = result %  60
+        result //= 60
+        hour = result
+        print(time, hour, minute, second, millisecond)
+        return "{hour:02d}:{minute:02d}:{second:02d},{millisecond:03d}".format(hour=hour, minute=minute, second=second, millisecond=millisecond)
 
 if __name__ == '__main__':
     # e = Extract('GE5E1nMLznY')
     # e = Extract('l3UzNeUr8C8')
     e = Extract('83cC2h35ZUM')
-    myClip, file_length = e.cvtVideo2Audio()
-    e.extract_sound(myClip, file_length)
-    e.make_subtitle()
+    e.extract()

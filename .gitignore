@@ -10,4 +10,4 @@ venv
 data/videos/*
 !data/videos/test*
 
-.DS_STORE
+.DS_Store
