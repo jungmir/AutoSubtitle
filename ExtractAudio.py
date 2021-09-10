@@ -1,11 +1,12 @@
 import speech_recognition as sr
 import moviepy.editor as mp
 import math
+import requests
 import os
 
 WINDOW_SIZE = 0.5
 THRESHOLD = 0.3
-SUBTITLE_TYPE = '.srt'
+SUBTITLE_TYPE = 'srt'
 
 
 class Extract:
@@ -17,7 +18,8 @@ class Extract:
             temp_video_path='data/videos/',
             window_size=WINDOW_SIZE,
             threshold=THRESHOLD,
-            language="en-GB"
+            language="en-GB",
+            callback=None
     ):
         self.WINDOW_SIZE = window_size
         self.THRESHOLD = threshold
@@ -29,6 +31,7 @@ class Extract:
         self.video_type = video_type
         self.audio_type = audio_type
         self.subtitle_type = SUBTITLE_TYPE
+        self.callback = callback
         self.language = language
         self.temp_video_path = rf'{temp_video_path}/{video_id}/{video_id}.{video_type}'
         self.audio_path = self.temp_video_path.replace(video_type, audio_type)
@@ -39,9 +42,20 @@ class Extract:
         pass
 
     def extract(self):
-        myClip, file_length = self.cvtVideo2Audio()
-        self.extract_sound(myClip, file_length)
-        self.make_subtitle()
+        try:
+            if self.callback:
+                requests.post(self.callback, data={'task': 'make_subtitle', 'status' : 'start', 'progress': 0})
+                
+            myClip, file_length = self.cvtVideo2Audio()
+            self.extract_sound(myClip, file_length)
+            self.make_subtitle()
+
+            if self.callback:
+                requests.post(self.callback, data={'task': 'make_subtitle', 'status' : 'complete', 'progress': 100})
+
+        except Exception as e:
+            requests.post(self.callback, data={'task': 'make_subtitle', 'status' : 'error', 'progress': 0, 'msg': e})
+
         return self.subtitle_path
 
     def cvtVideo2Audio(self):
@@ -98,6 +112,9 @@ class Extract:
                         self.subtitleSub.append(saveformat)
                         subtitle_index += 1
                         print(f"{start} - {end} {saveString}")
+                    if self.callback:
+                        progress = int(idx / len(self.subtitle))
+                        requests.post(self.callback, data={'task': 'make_subtitle', 'status': 'running', 'progress': progress})
                 else:
                     print('no audio')
 
