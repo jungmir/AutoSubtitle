@@ -12,3 +12,5 @@ data/videos/*
 temp/videos/*
 
 .DS_Store
+
+node_modules
