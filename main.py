@@ -76,17 +76,19 @@ async def root():
 @app.post("/upload")
 async def upload_file(request: Request, item: Item = Depends(Item.as_form)):
     video_id = ''
-
+    
     if item.data_type == "url":
         # @TODO: split youtube video id
         video_id = get_youtube_video_id(item.url)
 
         # @TODO: download video file
-        Downloader.download(video_id)
+        Downloader().download(video_id)
     elif item.data_type == 'file':
         # @TODO: save file
         video_id, _ = item.file.filename.split('.')
         temp_dir_path = os.path.join(os.path.dirname(__file__), f'temp/videos/{video_id}')
+        if not os.path.exists(temp_dir_path):
+            os.makedirs(temp_dir_path)
         file_name = os.path.join(temp_dir_path, item.file.filename)
         file_data = await item.file.read()
         with open(file_name, 'wb') as buffer:
