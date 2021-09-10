@@ -11,3 +11,5 @@ data/videos/*
 !data/videos/test*
 
 .DS_Store
+
+node_modules
