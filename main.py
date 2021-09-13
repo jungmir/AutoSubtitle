@@ -50,7 +50,23 @@ async def extract_video(video_id, video_type, language, upload_callback_url):
                 temp_video_path='temp/videos'
         ).extract)
         await asyncio.wait(task.start())
-    except:
+    except Exception as e:
+        return False
+    return True
+
+async def download_video(video_id, video_type, language, upload_callback_url):
+    try:
+        task = threading.Thread(target=Downloader().download, args=(video_id))
+        await asyncio.wait(task.start())
+        task = threading.Thread(target=Extract(
+                video_id=video_id, 
+                video_type=video_type, 
+                language=language, 
+                callback=upload_callback_url,
+                temp_video_path='temp/videos'
+        ).extract)
+        await asyncio.wait(task.start())
+    except Exception as e:
         return False
     return True
 
@@ -106,15 +122,7 @@ async def upload_file(request: Request, item: Item = Depends(Item.as_form)):
     else:
         print('Starting new event loop')
         asyncio.run(extract_video(video_id, item.video_type, item.language, upload_callback_url))
-    # asyncio.run(extract_video(video_id, item.video_type, item.language, upload_callback_url))
-    # extract_thread = threading.Thread(target=Extract(
-    #         video_id=video_id, 
-    #         video_type=item.video_type, 
-    #         language=item.language, 
-    #         callback=upload_callback_url,
-    #         temp_video_path='temp/videos'
-    # ).extract)
-    # extract_thread.start()
+
     return item
 
 @app.get('/upload/status')
